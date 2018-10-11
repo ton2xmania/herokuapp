@@ -3,7 +3,6 @@ package com.herokuapp.heroku.view;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -12,7 +11,6 @@ import android.support.design.widget.TextInputEditText;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.hannesdorfmann.mosby3.mvp.MvpActivity;
@@ -20,27 +18,13 @@ import com.herokuapp.heroku.R;
 import com.herokuapp.heroku.mvp.ifc.ContactView;
 import com.herokuapp.heroku.mvp.imp.ContactPresenter;
 import com.herokuapp.heroku.utilities.Utils;
-import com.squareup.picasso.Picasso;
-import com.vansuita.pickimage.bean.PickResult;
-import com.vansuita.pickimage.bundle.PickSetup;
-import com.vansuita.pickimage.dialog.PickImageDialog;
-import com.vansuita.pickimage.listeners.IPickResult;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ContactFormActivity extends MvpActivity<ContactView, ContactPresenter> implements ContactView, IPickResult {
+public class ContactFormActivity extends MvpActivity<ContactView, ContactPresenter> implements ContactView {
     private ProgressDialog progressDialog;
-    private String base64Photo = "";
-    private File photo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,31 +79,8 @@ public class ContactFormActivity extends MvpActivity<ContactView, ContactPresent
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    @Override
-    public void onPickResult(PickResult pickResult) {
-        if (pickResult.getError() == null) {
-            photo = new File(pickResult.getPath());
-            base64Photo = Utils.convert(pickResult.getBitmap());
-            iv_contact.setImageBitmap(pickResult.getBitmap());
-
-            OutputStream os = null;
-            try {
-                os = new BufferedOutputStream(new FileOutputStream(photo));
-                pickResult.getBitmap().compress(Bitmap.CompressFormat.JPEG, 80, os);
-                os.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @OnClick({R.id.btn_add_photo, R.id.btn_save_contact})
+    @OnClick(R.id.btn_save_contact)
     void onClick(View view) {
-        if (view.getId() == R.id.btn_add_photo) {
-            PickImageDialog.build(new PickSetup()).show(this);
-        }
 
         if (view.getId() == R.id.btn_save_contact) {
             if (getIntent().getStringExtra("mode").equals("add")) {
@@ -127,27 +88,24 @@ public class ContactFormActivity extends MvpActivity<ContactView, ContactPresent
                         et_firstname.getText().toString(),
                         et_lastname.getText().toString(),
                         Integer.parseInt(et_age.getText().toString()),
-                        base64Photo);
+                        et_photo.getText().toString());
             } else {
                 getPresenter().editContact(
                         getIntent().getStringExtra("id"),
                         et_firstname.getText().toString(),
                         et_lastname.getText().toString(),
                         Integer.parseInt(et_age.getText().toString()),
-                        base64Photo);
+                        et_photo.getText().toString());
             }
         }
     }
-
 
     @Override
     public void onLoadContact(String id, String firstName, String lastName, int age, String photo) {
         et_firstname.setText(firstName);
         et_lastname.setText(lastName);
         et_age.setText(String.valueOf(age));
-        if (!photo.equals("N/A")) {
-            Picasso.get().load(photo).into(iv_contact);
-        }
+        et_photo.setText(photo);
     }
 
     @Override
@@ -158,6 +116,7 @@ public class ContactFormActivity extends MvpActivity<ContactView, ContactPresent
                     public void onClick(DialogInterface dialog, int which) {
                         if (isSuccess) {
                             setResult(RESULT_OK);
+                            dialog.dismiss();
                             finish();
                         }
                     }
@@ -172,6 +131,7 @@ public class ContactFormActivity extends MvpActivity<ContactView, ContactPresent
                     public void onClick(DialogInterface dialog, int which) {
                         if (isDeleted) {
                             setResult(RESULT_OK);
+                            dialog.dismiss();
                             finish();
                         }
                     }
@@ -255,6 +215,6 @@ public class ContactFormActivity extends MvpActivity<ContactView, ContactPresent
     TextInputEditText et_lastname;
     @BindView(R.id.et_age)
     TextInputEditText et_age;
-    @BindView(R.id.iv_contact)
-    ImageView iv_contact;
+    @BindView(R.id.et_photo)
+    TextInputEditText et_photo;
 }

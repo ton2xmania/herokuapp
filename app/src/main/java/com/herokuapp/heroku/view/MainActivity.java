@@ -76,6 +76,7 @@ public class MainActivity extends MvpActivity<MainView, MainPresenter> implement
             public void onSimpleItemClick(BaseQuickAdapter adapter, View view, int position) {
                 Intent intent = new Intent(MainActivity.this, ContactFormActivity.class);
                 intent.putExtra("mode", "edit");
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.putExtra("id", contacts.get(position).getId());
                 startActivityForResult(intent, 1);
             }

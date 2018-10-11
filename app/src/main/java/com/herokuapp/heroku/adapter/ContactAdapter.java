@@ -28,8 +28,6 @@ public class ContactAdapter extends BaseQuickAdapter<Contact, BaseViewHolder> {
         baseViewHolder.setText(R.id.tv_age, "Usia " + contact.getAge() + " tahun");
 
         ImageView iv_contact = baseViewHolder.getView(R.id.iv_contact);
-        if (!contact.getPhoto().equals("N/A")) {
-            Picasso.get().load(contact.getPhoto()).into(iv_contact);
-        }
+        Picasso.get().load(contact.getPhoto()).into(iv_contact);
     }
 }
